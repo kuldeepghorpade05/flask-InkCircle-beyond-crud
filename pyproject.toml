@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "flask-inkcircle"
+version = "0.1.0"
+description = "A Flask book review API with MongoDB"
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+Flask = "^2.3.3"
+Flask-RESTX = "^1.1.0"
+Flask-JWT-Extended = "^4.5.3"
+pymongo = "^4.5.0"
+marshmallow = "^3.20.1"
+python-dotenv = "^1.0.0"
+python-jose = "^3.3.0"
+celery = "^5.3.4"
+redis = "^5.0.1"
+flask-mail = "^0.9.1"
+itsdangerous = "^2.1.2"
+bcrypt = "4.0.1"
+passlib = "1.7.4"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.4.0"
+pytest-flask = "^1.2.0"
+black = "^23.0.0"
+flake8 = "^6.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
