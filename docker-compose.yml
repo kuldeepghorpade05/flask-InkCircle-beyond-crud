@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: flask_inkcircle_app
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    volumes:
+      - ./src:/app/src
+      - ./celery_tasks.py:/app/celery_tasks.py
+      - ./run.py:/app/run.py
+    command: python run.py
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    volumes:
+      - redis_data:/data
+
+  celery:
+    build: .
+    container_name: celery_worker
+    env_file:
+      - .env
+    command: celery -A celery_tasks.celery worker --loglevel=info
+    depends_on:
+      - redis
+      - web
+    networks:
+      - app-network
+    volumes:
+      - ./src:/app/src
+      - ./celery_tasks.py:/app/celery_tasks.py
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis_data:
