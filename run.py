@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-# Load environment variables BEFORE creating the app
+# Load environment variables
 load_dotenv()
 
 from src.app import create_app

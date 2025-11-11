@@ -19,11 +19,11 @@ class RoleChecker:
         def decorated_function(*args, **kwargs):
             verify_jwt_in_request()
             claims = get_jwt()
-            current_user_id = get_jwt_identity()
+            user_email = get_jwt_identity()  # Changed: This is email, not user ID
             
-            # Get user from database
+            # Get user from database using email
             user_service = AuthService()
-            user = user_service.get_user_by_id(current_user_id)
+            user = user_service.get_user_by_email(user_email)  # Changed: Use get_user_by_email
             
             if not user:
                 return jsonify({"message": "User not found"}), 404
@@ -42,10 +42,10 @@ def get_current_user(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         verify_jwt_in_request()
-        current_user_id = get_jwt_identity()
+        user_email = get_jwt_identity()  # Changed: This is email, not user ID
         
         user_service = AuthService()
-        user = user_service.get_user_by_id(current_user_id)
+        user = user_service.get_user_by_email(user_email)  # Changed: Use get_user_by_email
         
         if not user:
             return jsonify({"message": "User not found"}), 404
@@ -58,10 +58,10 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         verify_jwt_in_request()
-        current_user_id = get_jwt_identity()
+        user_email = get_jwt_identity()  # Changed: This is email, not user ID
         
         user_service = AuthService()
-        user = user_service.get_user_by_id(current_user_id)
+        user = user_service.get_user_by_email(user_email)  # Changed: Use get_user_by_email
         
         if not user or user.get('role') != 'admin':
             return jsonify({"message": "Admin access required"}), 403

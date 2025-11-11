@@ -3,34 +3,40 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from celery import Celery
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Initialize Celery
 celery = Celery('celery_tasks')
-celery.conf.broker_url = 'redis://localhost:6379/0'
-celery.conf.result_backend = 'redis://localhost:6379/0'
-
-# HARDCODE YOUR EMAIL CONFIG - TEMPORARY FIX
-EMAIL_CONFIG = {
-    'MAIL_SERVER': 'smtp.gmail.com',
-    'MAIL_PORT': 587,
-    'MAIL_USE_TLS': True,
-    'MAIL_USERNAME': 'kuldeepghorpade1010@gmail.com',  # Your email
-    'MAIL_PASSWORD': 'hfovprccmehlojsh',  # Your app password
-    'MAIL_DEFAULT_SENDER': 'kuldeep Ghorpade <kuldeepghorpade1010@gmail.com>'
-}
+celery.conf.broker_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+celery.conf.result_backend = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 
 @celery.task(name='celery_tasks.send_email')
 def send_email(recipients, subject, html_body, text_body=None):
     """Celery task to send email in background"""
     try:
         print(f"📧 [CELERY] Starting email send to {recipients}")
-        print(f"📧 [CELERY] Username: {EMAIL_CONFIG['MAIL_USERNAME']}")
-        print(f"📧 [CELERY] Password: {'*' * len(EMAIL_CONFIG['MAIL_PASSWORD'])}")
+        
+        # Get config from environment
+        mail_config = {
+            'MAIL_SERVER': os.getenv('MAIL_SERVER', 'smtp.gmail.com'),
+            'MAIL_PORT': int(os.getenv('MAIL_PORT', 587)),
+            'MAIL_USE_TLS': os.getenv('MAIL_USE_TLS', 'True').lower() == 'true',
+            'MAIL_USERNAME': os.getenv('MAIL_USERNAME'),
+            'MAIL_PASSWORD': os.getenv('MAIL_PASSWORD'),
+            'MAIL_DEFAULT_SENDER': os.getenv('MAIL_DEFAULT_SENDER')
+        }
+        
+        # Validate required config
+        if not mail_config['MAIL_USERNAME'] or not mail_config['MAIL_PASSWORD']:
+            return {"status": "failed", "error": "Email configuration missing"}
         
         # Create message
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
-        msg['From'] = EMAIL_CONFIG['MAIL_DEFAULT_SENDER']
+        msg['From'] = mail_config['MAIL_DEFAULT_SENDER']
         msg['To'] = ', '.join(recipients) if isinstance(recipients, list) else recipients
 
         # Create HTML body
@@ -38,14 +44,15 @@ def send_email(recipients, subject, html_body, text_body=None):
         msg.attach(html_part)
 
         # Send email
-        print(f"📧 [CELERY] Connecting to {EMAIL_CONFIG['MAIL_SERVER']}:{EMAIL_CONFIG['MAIL_PORT']}")
+        print(f"📧 [CELERY] Connecting to {mail_config['MAIL_SERVER']}:{mail_config['MAIL_PORT']}")
         
-        with smtplib.SMTP(EMAIL_CONFIG['MAIL_SERVER'], EMAIL_CONFIG['MAIL_PORT']) as server:
-            server.starttls()
-            print("✅ [CELERY] TLS started")
+        with smtplib.SMTP(mail_config['MAIL_SERVER'], mail_config['MAIL_PORT']) as server:
+            if mail_config['MAIL_USE_TLS']:
+                server.starttls()
+                print("✅ [CELERY] TLS started")
             
             print(f"📧 [CELERY] Logging in...")
-            server.login(EMAIL_CONFIG['MAIL_USERNAME'], EMAIL_CONFIG['MAIL_PASSWORD'])
+            server.login(mail_config['MAIL_USERNAME'], mail_config['MAIL_PASSWORD'])
             print("✅ [CELERY] SMTP login successful")
             
             server.send_message(msg)

@@ -1,0 +1,11 @@
+sudo systemctl start redis
+# or
+sudo service redis-server start
+
+--------------------------------------------------------------
+
+poetry run celery -A celery_tasks.celery worker --loglevel=info
+
+--------------------------------------------------------------
+
+poetry run python run.py

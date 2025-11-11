@@ -1,0 +1,12 @@
+Key Differences from FastAPI to Flask:
+MongoDB instead of SQL: Using pymongo with ObjectId
+
+Flask-RESTX instead of FastAPI: Different decorators and request handling
+
+JWT Authentication: Using flask_jwt_extended instead of FastAPI's OAuth2
+
+Synchronous: Flask is synchronous while your FastAPI version was async
+
+Error Handling: Custom error responses instead of raising exceptions
+
+The endpoints match your FastAPI structure but adapted for Flask + MongoDB!
