@@ -43,23 +43,24 @@ def create_app(config_name='default'):
     }
     
     api = Api(
-        app, 
-        doc='/docs', 
-        title='InkCircle API', 
-        authorizations=authorizations,
-        security='Bearer Auth'
+    app, 
+    doc='/docs', 
+    title='InkCircle API | Kuldeep Ghorpade',
+    version='1.0',
+    authorizations=authorizations,
+    security='Bearer Auth'
     )
     
     # Add namespaces
     from src.auth.routes import auth_ns
     from src.books.routes import books_ns
     from src.reviews.routes import reviews_ns
-    from src.tags.routes import tags_ns  # ADD THIS IMPORT
+    from src.tags.routes import tags_ns 
     
     api.add_namespace(auth_ns, path='/api/v1/auth')
     api.add_namespace(books_ns, path='/api/v1/books')
     api.add_namespace(reviews_ns, path='/api/v1/reviews')
-    api.add_namespace(tags_ns, path='/api/v1/tags')  # ADD THIS LINE
+    api.add_namespace(tags_ns, path='/api/v1/tags') 
     
     # Register error handlers
     from src.errors import register_error_handlers
