@@ -1,304 +1,244 @@
-# Flask InkCircle Backend
+# 📚 Flask InkCircle Backend
 
-## 📚 Project Overview
-Flask InkCircle is a comprehensive book review API built with Flask that allows users to manage books, submit reviews, and interact with a reading community. The application features JWT authentication, RESTful APIs, background task processing, and MongoDB integration.
+## 🌐 Live Deployment
 
-## 🚀 Technologies Used
+**Production URL:**
+🔗 [https://kuldeepghorpade-flask-inkcircle.duckdns.org/](https://kuldeepghorpade-flask-inkcircle.duckdns.org/)
+📘 API Docs (Swagger UI):
+🔗 [https://kuldeepghorpade-flask-inkcircle.duckdns.org/docs](https://kuldeepghorpade-flask-inkcircle.duckdns.org/docs)
 
-### Backend Framework
-- **Flask 2.3.3** - Web framework
-- **Flask-RESTX 1.3.2** - API framework with Swagger documentation
-- **Flask-JWT-Extended 4.7.1** - JWT authentication
+---
 
-### Database & Caching
-- **MongoDB Atlas** - Cloud database (via PyMongo 4.15.3)
-- **Redis 5.3.1** - Caching and Celery broker
+## 🧩 Overview
 
-### Authentication & Security
-- **bcrypt 4.0.1** - Password hashing
-- **python-jose 3.5.0** - JWT token handling
-- **passlib 1.7.4** - Password policy enforcement
-- **itsdangerous 2.2.0** - Security-related utilities
+**Flask InkCircle** is a **book review API platform** built using Flask, providing endpoints for managing users, books, tags, and reviews — all secured with JWT authentication.
+The backend is **Dockerized**, deployed on an **AWS VM**, served via **Nginx reverse proxy**, and secured with **Certbot SSL certificates** using a **DuckDNS subdomain**.
 
-### Task Queue & Background Jobs
-- **Celery 5.5.3** - Distributed task queue
-- **Redis** - Message broker for Celery
+---
 
-### Email & Notifications
-- **flask-mail 0.9.1** - Email sending capabilities
+## 🏗️ Tech Stack
 
-### Data Validation & Serialization
-- **marshmallow 3.26.1** - Object serialization/deserialization
+### ⚙️ Backend
 
-### Environment & Configuration
-- **python-dotenv 1.2.1** - Environment variable management
+* **Flask (2.3.3)** — Core web framework
+* **Flask-RESTX (1.3.2)** — REST API + Swagger docs
+* **Flask-JWT-Extended (4.7.1)** — JWT authentication
+* **PyMongo (4.15.3)** — MongoDB driver
+* **Celery (5.5.3)** — Async background tasks
+* **Redis (5.3.1)** — Cache & Celery broker
 
-### Package Management
-- **Poetry** - Dependency management and packaging
+### 🔒 Security
 
-## 📁 Project Structure
+* **bcrypt (4.0.1)** — Password hashing
+* **python-jose (3.5.0)** — JWT handling
+* **passlib (1.7.4)** — Password policies
+* **itsdangerous (2.2.0)** — Secure signing
+* **CORS** — Cross-origin resource sharing
+
+### 📦 DevOps & Deployment
+
+* **Docker + Docker Compose** — Containerization
+* **Nginx** — Reverse proxy and SSL termination
+* **Certbot + Let’s Encrypt** — HTTPS certificates
+* **DuckDNS** — Free dynamic DNS subdomain
+* **AWS VM (Ubuntu)** — Production hosting
+
+### 🧰 Other Tools
+
+* **Poetry** — Dependency management
+* **Marshmallow (3.26.1)** — Schema validation
+* **Flask-Mail (0.9.1)** — Email notifications
+* **python-dotenv (1.2.1)** — Env management
+
+---
+
+## 📁 Updated Project Structure
 
 ```
 flask-InkCircle-beyond-crud/
-├── src/                         # Source code
-│   ├── app.py                  # Main Flask application
-│   ├── __init__.py             # Package initialization
+├── Dockerfile                  # Docker build configuration
+├── docker-compose.yml          # Multi-container setup (Flask + Redis)
+├── celery_tasks.py             # Celery worker configuration
+├── pyproject.toml              # Poetry dependencies
+├── poetry.lock
+├── requirements.txt
+├── run.py                      # Flask entry point
+├── src/
+│   ├── app.py                  # Flask application factory
 │   ├── config.py               # Configuration settings
-│   ├── extensions.py           # Flask extensions initialization
+│   ├── extensions.py           # Initialize Flask extensions
 │   ├── errors.py               # Error handlers
-│   ├── db/                     # Database layer
-│   │   ├── __init__.py
+│   ├── db/
 │   │   ├── models.py           # MongoDB models
-│   │   └── __pycache__/
-│   ├── auth/                   # Authentication module
-│   │   ├── __init__.py
-│   │   ├── routes.py           # Auth endpoints
+│   │   └── __init__.py
+│   ├── auth/
+│   │   ├── routes.py           # Auth routes
+│   │   ├── service.py          # Auth logic
 │   │   ├── schemas.py          # Auth schemas
-│   │   ├── service.py          # Auth business logic
-│   │   ├── dependencies.py     # Auth dependencies
-│   │   ├── utils.py            # Auth utilities
-│   │   └── __pycache__/
-│   ├── books/                  # Books module
-│   │   ├── __init__.py
-│   │   ├── routes.py           # Book endpoints
-│   │   ├── schemas.py          # Book schemas
-│   │   ├── service.py          # Book business logic
-│   │   └── __pycache__/
-│   ├── reviews/                # Reviews module
-│   │   ├── __init__.py
-│   │   ├── routes.py           # Review endpoints
-│   │   ├── schemas.py          # Review schemas
-│   │   ├── service.py          # Review business logic
-│   │   └── __pycache__/
-│   ├── tags/                   # Tags/Categories module
-│   │   ├── __init__.py
-│   │   ├── routes.py           # Tag endpoints
-│   │   ├── schemas.py          # Tag schemas
-│   │   ├── service.py          # Tag business logic
-│   │   └── __pycache__/
-│   └── __pycache__/
-├── celery_tasks.py             # Celery tasks configuration
-├── run.py                      # Application entry point
-├── notes/                      # Development notes
-│   ├── authpy.txt
-│   ├── bookspy.txt
-│   ├── cms.txt
-│   └── note1.txt
-├── pyproject.toml              # Poetry configuration
-├── poetry.lock                 # Dependency lock file
-├── requirements.txt            # Python dependencies
-└── README.md                   # Project documentation
+│   │   ├── utils.py            # JWT helpers
+│   │   ├── dependencies.py
+│   │   └── __init__.py
+│   ├── books/
+│   │   ├── routes.py
+│   │   ├── schemas.py
+│   │   ├── service.py
+│   │   └── __init__.py
+│   ├── reviews/
+│   │   ├── routes.py
+│   │   ├── schemas.py
+│   │   ├── service.py
+│   │   └── __init__.py
+│   ├── tags/
+│   │   ├── routes.py
+│   │   ├── schemas.py
+│   │   ├── service.py
+│   │   └── __init__.py
+│   └── __init__.py
+└── __pycache__/
 ```
+
+---
+
+## 🐳 Docker Setup
+
+### 1️⃣ Build and Start Containers
+
+```bash
+docker-compose up -d --build
+```
+
+### 2️⃣ Check Running Containers
+
+```bash
+docker ps
+```
+
+### 3️⃣ Stop Containers
+
+```bash
+docker-compose down
+```
+
+---
+
+## 🌍 Nginx + Certbot (Reverse Proxy & SSL)
+
+### Nginx configuration snippet:
+
+```nginx
+server {
+    server_name kuldeepghorpade-flask-inkcircle.duckdns.org;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        include proxy_params;
+    }
+
+    listen 80;
+}
+```
+
+### Enable HTTPS:
+
+```bash
+sudo certbot --nginx -d kuldeepghorpade-flask-inkcircle.duckdns.org
+```
+
+Certbot automatically updates the Nginx config for HTTPS and renews certificates.
+
+---
 
 ## 🔌 API Endpoints
 
-### Authentication Endpoints
-| Method | Endpoint | Description | Authentication |
-|--------|----------|-------------|----------------|
-| POST | `/api/auth/register` | User registration | Public |
-| POST | `/api/auth/login` | User login | Public |
-| POST | `/api/auth/logout` | User logout | Required |
-| POST | `/api/auth/refresh` | Refresh JWT token | Required |
-| POST | `/api/auth/forgot-password` | Request password reset | Public |
-| POST | `/api/auth/reset-password` | Reset password | Public |
+Swagger Docs → [https://kuldeepghorpade-flask-inkcircle.duckdns.org/docs](https://kuldeepghorpade-flask-inkcircle.duckdns.org/docs)
 
-### User Management Endpoints
-| Method | Endpoint | Description | Authentication |
-|--------|----------|-------------|----------------|
-| GET | `/api/users/profile` | Get user profile | Required |
-| PUT | `/api/users/profile` | Update user profile | Required |
-| GET | `/api/users/reviews` | Get user's reviews | Required |
-| GET | `/api/users/books` | Get user's books | Required |
+| Category | Example Endpoint                        | Auth   |
+| -------- | --------------------------------------- | ------ |
+| Auth     | `/api/auth/login`, `/api/auth/register` | Public |
+| Books    | `/api/books`, `/api/books/<id>`         | JWT    |
+| Reviews  | `/api/books/<id>/reviews`               | JWT    |
+| Tags     | `/api/tags`                             | Admin  |
+| Users    | `/api/users/profile`                    | JWT    |
 
-### Book Management Endpoints
-| Method | Endpoint | Description | Authentication |
-|--------|----------|-------------|----------------|
-| GET | `/api/books` | Get all books (with pagination) | Optional |
-| POST | `/api/books` | Create new book | Required |
-| GET | `/api/books/<book_id>` | Get book details | Optional |
-| PUT | `/api/books/<book_id>` | Update book | Required (Owner/Admin) |
-| DELETE | `/api/books/<book_id>` | Delete book | Required (Owner/Admin) |
-| GET | `/api/books/search` | Search books | Optional |
-| GET | `/api/books/categories` | Get book categories | Optional |
+---
 
-### Review Endpoints
-| Method | Endpoint | Description | Authentication |
-|--------|----------|-------------|----------------|
-| POST | `/api/books/<book_id>/reviews` | Add review to book | Required |
-| GET | `/api/books/<book_id>/reviews` | Get book reviews | Optional |
-| PUT | `/api/reviews/<review_id>` | Update review | Required (Owner) |
-| DELETE | `/api/reviews/<review_id>` | Delete review | Required (Owner/Admin) |
-| POST | `/api/reviews/<review_id>/like` | Like/unlike review | Required |
-| GET | `/api/reviews/trending` | Get trending reviews | Optional |
+## ⚙️ Environment Variables (`.env`)
 
-### Tag Endpoints
-| Method | Endpoint | Description | Authentication |
-|--------|----------|-------------|----------------|
-| GET | `/api/tags` | Get all tags | Optional |
-| POST | `/api/tags` | Create new tag | Required (Admin) |
-| GET | `/api/tags/<tag_id>/books` | Get books by tag | Optional |
-
-## 🛠️ Setup and Installation
-
-### Prerequisites
-- Python 3.9+
-- MongoDB Atlas account
-- Redis server
-- Poetry (for dependency management)
-
-### Installation Steps
-
-1. **Install Poetry** (if not already installed)
-   ```bash
-   curl -sSL https://install.python-poetry.org | python3 -
-   # or on Windows
-   pip install poetry
-   ```
-
-2. **Clone and setup project**
-   ```bash
-   git clone <repository-url>
-   cd flask-InkCircle-beyond-crud
-   
-   # Install dependencies using Poetry
-   poetry install
-   
-   # Activate virtual environment
-   poetry shell
-   ```
-
-3. **Environment configuration**
-   ```bash
-   # Create .env file from template
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
-
-4. **Configure MongoDB Atlas**
-   - Create a MongoDB Atlas account at https://www.mongodb.com/atlas
-   - Create a new cluster
-   - Get your connection string
-   - Add IP to whitelist
-   - Create database user
-
-5. **Run the application**
-   ```bash
-   # Development server
-   poetry run python run.py
-   
-   # Start Celery worker (in separate terminal)
-   poetry run celery -A celery_tasks worker --loglevel=info
-   ```
-
-## ⚙️ Configuration
-
-### Environment Variables for MongoDB Atlas
 ```env
-# Flask Configuration
-FLASK_ENV=development
+FLASK_ENV=production
 SECRET_KEY=your-secret-key
 
-# MongoDB Atlas Configuration
-MONGODB_URI=mongodb+srv://username:password@cluster-name.mongodb.net/inkcircle?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/inkcircle
 MONGODB_DB_NAME=inkcircle
 
-# Redis Configuration
-REDIS_URL=redis://localhost:6379/0
+REDIS_URL=redis://redis:6379/0
 
-# JWT Configuration
 JWT_SECRET_KEY=your-jwt-secret
-JWT_ACCESS_TOKEN_EXPIRES=3600  # 1 hour
-JWT_REFRESH_TOKEN_EXPIRES=86400  # 24 hours
+JWT_ACCESS_TOKEN_EXPIRES=3600
+JWT_REFRESH_TOKEN_EXPIRES=86400
 
-# Email Configuration
 MAIL_SERVER=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USE_TLS=True
 MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-app-password
 
-# Celery Configuration
-CELERY_BROKER_URL=redis://localhost:6379/0
-CELERY_RESULT_BACKEND=redis://localhost:6379/0
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
 ```
 
-### Key Files Description
+---
 
-- **`src/app.py`**: Main Flask application factory
-- **`src/config.py`**: Configuration classes for different environments
-- **`src/extensions.py`**: Flask extensions initialization (JWT, Mongo, etc.)
-- **`src/errors.py`**: Custom error handlers
-- **`src/db/models.py`**: MongoDB models and schemas
-- **`celery_tasks.py`**: Celery configuration and task definitions
-- **`run.py`**: Application entry point
+## 🚀 Deployment Summary
 
-### Poetry Commands Reference
-```bash
-# Add new dependency
-poetry add package-name
+* **Server:** AWS EC2 (Ubuntu)
+* **Reverse Proxy:** Nginx
+* **SSL/TLS:** Certbot (Let’s Encrypt)
+* **Containers:** Flask API + Redis
+* **DNS:** DuckDNS subdomain
+* **Ports:**
 
-# Add development dependency
-poetry add --dev package-name
+  * 443 → HTTPS (Flask via Nginx proxy)
+  * 80 → Redirect to HTTPS
 
-# Update dependencies
-poetry update
+---
 
-# Show dependency tree
-poetry show --tree
+## 🔒 Security Highlights
 
-# Export to requirements.txt
-poetry export -f requirements.txt --output requirements.txt
+* JWT authentication + refresh tokens
+* HTTPS enforced with Certbot
+* Passwords hashed with bcrypt
+* Input validation with Marshmallow
+* CORS protection enabled
+* Reverse proxy hiding backend port 8000
 
-# Run script within poetry environment
-poetry run python run.py
-```
+---
 
-## 🚀 Deployment with MongoDB Atlas
+## 📈 Performance Optimizations
 
-### MongoDB Atlas Setup
-1. **Create Cluster**: Go to MongoDB Atlas → Create new cluster
-2. **Network Access**: Add your IP address to whitelist (0.0.0.0/0 for all IPs in development)
-3. **Database Access**: Create database user with read/write permissions
-4. **Connection String**: Get your connection string from "Connect" button
+* Redis caching for frequent data
+* Celery background tasks
+* MongoDB indexes
+* Pagination for large data
+* Async mail delivery
 
-### Production Deployment Steps
-1. **Set up Redis** (if not using cloud Redis)
-2. **Configure environment variables** on your server
-3. **Use production WSGI server** (Gunicorn, uWSGI)
-4. **Set up reverse proxy** (Nginx, Apache)
-5. **Configure SSL/TLS certificates**
-6. **Set up process manager** (systemd, supervisor)
-
-## 📊 API Documentation
-
-Once running, access the interactive API documentation at:
-```
-http://localhost:8000/
-```
-
-The Swagger UI provides complete endpoint documentation with the ability to test APIs directly from the browser.
-
-## 🔒 Security Features
-
-- JWT-based authentication with refresh tokens
-- Password hashing with bcrypt
-- CORS configuration
-- Input validation with Marshmallow
-- Rate limiting capabilities
-- Secure headers configuration
-
-## 📈 Performance Features
-
-- Redis caching for frequent queries
-- Celery background tasks for heavy operations
-- MongoDB indexing for optimal queries
-- Pagination for large datasets
-- Async email sending
+---
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+```bash
+git checkout -b feature/new-feature
+# Make your changes
+git commit -m "Add new feature"
+git push origin feature/new-feature
+# Submit a PR
+```
+
+---
+
+## 🧠 Author
+
+**Kuldeep Ghorpade**
+📍 Deployed on AWS
+🔗 [https://kuldeepghorpade-flask-inkcircle.duckdns.org](https://kuldeepghorpade-flask-inkcircle.duckdns.org)
 
