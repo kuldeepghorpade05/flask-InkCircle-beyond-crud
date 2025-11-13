@@ -174,28 +174,6 @@ def format_user_response(user_doc):
     
     return user
 
-# =========================
-# Test Email Endpoint
-# =========================
-@auth_ns.route('/send_mail')
-class SendMail(Resource):
-    @auth_ns.expect(email_model)
-    @auth_ns.response(200, 'Email sent successfully')
-    @auth_ns.response(400, 'Validation error')
-    def post(self):
-        """Test endpoint to send an email using Celery"""
-        data = request.get_json()
-        errors = email_schema.validate(data)
-        if errors:
-            return {'errors': errors}, 400
-        
-        recipients = data['addresses']
-        html = "<h1>Welcome to the app</h1>"
-        subject = "Welcome to our app"
-
-        send_email_task(recipients, subject, html)
-
-        return {"message": "Email sent successfully"}, 200
 
 # =========================
 # Signup Endpoint
@@ -300,7 +278,7 @@ class VerifyUser(Resource):
             return {'message': f'Verification error: {str(e)}'}, 500
 
 # =========================
-# Login Endpoint (Fixed)
+# Login Endpoint 
 # =========================
 @auth_ns.route('/login')
 class Login(Resource):
@@ -575,23 +553,3 @@ class UpdateCurrentUser(Resource):
                 
         except Exception as e:
             return {'message': f'Update error: {str(e)}'}, 500
-
-# =========================
-# Debug Email Configuration
-# =========================
-@auth_ns.route('/debug_email')
-class DebugEmail(Resource):
-    def get(self):
-        """Debug email configuration"""
-        config_info = {
-            "mail_server": Config.MAIL_SERVER,
-            "mail_port": Config.MAIL_PORT,
-            "mail_use_tls": Config.MAIL_USE_TLS,
-            "mail_use_ssl": Config.MAIL_USE_SSL,
-            "mail_username": Config.MAIL_USERNAME,
-            "mail_password_set": bool(Config.MAIL_PASSWORD),
-            "mail_default_sender": Config.MAIL_DEFAULT_SENDER,
-            "celery_available": CELERY_AVAILABLE,
-            "redis_url": Config.REDIS_URL
-        }
-        return config_info, 200            

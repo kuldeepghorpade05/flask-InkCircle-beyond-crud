@@ -130,7 +130,7 @@ server {
     server_name kuldeepghorpade-flask-inkcircle.duckdns.org;
 
     location / {
-        proxy_pass http://127.0.0.1:8000;
+        proxy_pass http://127.0.0.1:5000;
         include proxy_params;
     }
 
@@ -210,7 +210,7 @@ CELERY_RESULT_BACKEND=redis://redis:6379/0
 * Passwords hashed with bcrypt
 * Input validation with Marshmallow
 * CORS protection enabled
-* Reverse proxy hiding backend port 8000
+* Reverse proxy hiding backend port 5000
 
 ---
 
