@@ -6,7 +6,7 @@ from src.books.service import BookService
 from src.books.schemas import BookCreateSchema, BookUpdateSchema, BookSchema, BookDetailSchema
 from src.auth.dependencies import get_current_user, RoleChecker
 
-# Create namespace
+# namespace
 books_ns = Namespace('books', description='Book operations')
 
 # Service instance

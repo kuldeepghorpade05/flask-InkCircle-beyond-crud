@@ -21,12 +21,10 @@ from src.auth.dependencies import get_current_user, RoleChecker
 from src.errors import UserAlreadyExists, UserNotFound, InvalidCredentials
 from src.auth.utils import create_url_safe_token, decode_url_safe_token
 
-# ========== NAMESPACE MUST COME FIRST ==========
+# ========== NAMESPACE  ==========
 auth_ns = Namespace('auth', description='Authentication operations')
 
-# ========== THEN CELERY IMPORTS ==========
-# Try to import celery, but have fallback
-# In your routes.py
+# ========== CELERY IMPORTS ==========
 try:
     from celery_tasks import send_email
     CELERY_AVAILABLE = True
@@ -36,7 +34,7 @@ except Exception as e:
     print(f"⚠️  Celery not available: {e}")
 
 
-# ========== THEN EMAIL FUNCTIONS ==========
+# ========== EMAIL FUNCTIONS for sending sync email if celery doesnt work ==========
 def send_real_email_sync(recipients, subject, html_body, text_body=None):
     """Synchronous email sending as fallback"""
     try:
@@ -57,11 +55,14 @@ def send_real_email_sync(recipients, subject, html_body, text_body=None):
         # Send email
         print(f"📧 [SYNC] Connecting to {Config.MAIL_SERVER}:{Config.MAIL_PORT}")
         
+        # connects to smptp server
         with smtplib.SMTP(Config.MAIL_SERVER, Config.MAIL_PORT) as server:
+            # turns on encryption
             if Config.MAIL_USE_TLS:
                 server.starttls()
                 print("✅ [SYNC] TLS started")
             
+            # login to smpt and authenticate creds if not authenticated wont send email
             print(f"📧 [SYNC] Logging in as {Config.MAIL_USERNAME}")
             server.login(Config.MAIL_USERNAME, Config.MAIL_PASSWORD)
             print("✅ [SYNC] SMTP login successful")
@@ -74,7 +75,8 @@ def send_real_email_sync(recipients, subject, html_body, text_body=None):
     except Exception as e:
         print(f"❌ [SYNC] Failed to send email: {str(e)}")
         return False
-
+    
+# the above function for sync email sending if celery fails is called using below fallback function
 def send_email_fallback(recipients, subject, html_body):
     """Fallback email function when Celery is not available"""
     print(f"📧 [FALLBACK] Using synchronous email fallback")
@@ -103,6 +105,7 @@ password_reset_confirm_schema = PasswordResetConfirmSchema()
 user_schema = UserSchema()
 
 # Flask-RESTX models for Swagger
+# this r only used for swagger docs or api docs - Only describe fields for Swagger UI
 user_model = auth_ns.model('User', {
     'uid': fields.String(description='User ID'),
     'username': fields.String(description='Username'),
@@ -115,7 +118,7 @@ user_model = auth_ns.model('User', {
     'updated_at': fields.DateTime(description='Updated At')
 })
 
-# ... continue with the rest of your routes.py code ...
+
 user_create_model = auth_ns.model('UserCreate', {
     'first_name': fields.String(required=True, description='First Name'),
     'last_name': fields.String(required=True, description='Last Name'),
@@ -153,6 +156,7 @@ user_service = AuthService()
 role_checker = RoleChecker(["admin", "user"])
 REFRESH_TOKEN_EXPIRY = 2  # days
 
+# formats user respose and removes confidential info if exits
 def format_user_response(user_doc):
     """Format MongoDB document for response"""
     if not user_doc:
@@ -222,7 +226,7 @@ class Signup(Resource):
             return {
                 "message": "Account created! Verification email sent.",
                 "user": format_user_response(new_user),
-                "verification_link": link,  # optional, for testing
+                "verification_link": link, 
             }, 201
             
         except Exception as e:
@@ -316,7 +320,7 @@ class Login(Resource):
                     'message': 'Account not verified. Please check your email.'
                 }, 403
 
-            # FIXED: Use email as string identity for JWT
+            # Use email as string identity for JWT
             user_identity = email
             
             # Create tokens
@@ -345,7 +349,7 @@ class RefreshToken(Resource):
     def post(self):
         """Refresh access token"""
         try:
-            # FIXED: Get email from refresh token identity
+            # Get email from refresh token identity
             user_email = get_jwt_identity()
             
             # Create new access token
@@ -369,7 +373,6 @@ class Logout(Resource):
     @auth_ns.response(200, 'Logout successful')
     def post(self):
         """Logout user (client should discard tokens)"""
-        # In a real implementation, you might want to add tokens to a blacklist
         return {
             "message": "Logout successful. Please discard your tokens."
         }, 200
@@ -413,7 +416,7 @@ class PasswordResetRequest(Resource):
 
             return {
                 "message": "Password reset email sent! Check your inbox.",
-                "reset_link": link,  # optional, for testing
+                "reset_link": link, 
             }, 200
             
         except Exception as e:
@@ -459,7 +462,6 @@ class PasswordResetConfirm(Resource):
             from src.auth.utils import generate_passwd_hash
             new_password_hash = generate_passwd_hash(new_password)
             
-            # Use the correct user ID field (_id converted to string)
             user_id = str(user['_id'])
             success = user_service.update_user(user_id, {'password_hash': new_password_hash})
 
@@ -481,7 +483,7 @@ class PasswordResetConfirm(Resource):
             return {'message': f'Password reset error: {str(e)}'}, 500
 
 # =========================
-# Get Current User (Fixed)
+# Get Current User \
 # =========================
 @auth_ns.route('/me')
 class CurrentUser(Resource):
@@ -492,7 +494,6 @@ class CurrentUser(Resource):
     def get(self):
         """Get current user information"""
         try:
-            # FIXED: Get email from JWT identity
             user_email = get_jwt_identity()
             
             if not user_email:

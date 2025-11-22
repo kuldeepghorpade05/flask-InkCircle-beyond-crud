@@ -9,9 +9,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Initialize Celery
-celery = Celery('celery_tasks')
-celery.conf.broker_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
-celery.conf.result_backend = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+celery = Celery('celery_tasks') 
+celery.conf.broker_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0') # redis as broker
+celery.conf.result_backend = os.getenv('REDIS_URL', 'redis://localhost:6379/0') # backend storing results - using redis here
 
 @celery.task(name='celery_tasks.send_email')
 def send_email(recipients, subject, html_body, text_body=None):
@@ -33,13 +33,13 @@ def send_email(recipients, subject, html_body, text_body=None):
         if not mail_config['MAIL_USERNAME'] or not mail_config['MAIL_PASSWORD']:
             return {"status": "failed", "error": "Email configuration missing"}
         
-        # Create message
+        # message
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From'] = mail_config['MAIL_DEFAULT_SENDER']
         msg['To'] = ', '.join(recipients) if isinstance(recipients, list) else recipients
 
-        # Create HTML body
+        # HTML body
         html_part = MIMEText(html_body, 'html')
         msg.attach(html_part)
 

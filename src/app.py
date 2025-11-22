@@ -51,7 +51,7 @@ def create_app(config_name='default'):
     security='Bearer Auth'
     )
     
-    # Add namespaces
+    # imported namespaces
     from src.auth.routes import auth_ns
     from src.books.routes import books_ns
     from src.reviews.routes import reviews_ns
